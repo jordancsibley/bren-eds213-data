@@ -1,0 +1,129 @@
+-- continuing with sql
+-- was able to open database by typing duckbd database.db
+
+SELECT Species, COUNT(*) AS Nest_count FROM Bird_nests 
+  WHERE Site = 'nome'
+  GROUP BY Species 
+  HAVING Nest_count > 10 
+  ORDER BY Species 
+  LIMIT 2;
+
+
+-- We can nest queries 
+SELECT Scientific_name, Nest_count FROM 
+  (SELECT Species, COUNT(*) AS Nest_count FROM Bird_nests -- same query as above 
+    WHERE Site = 'nome'
+    GROUP BY Species 
+    HAVING Nest_count > 10 
+    ORDER BY Species 
+    LIMIT 2) JOIN Species
+   ON Species = Code;
+
+-- Outer joins 
+CREATE TEMP TABLE a (
+    cola INTEGER,
+    common INTEGER 
+);
+INSERT INTO a VALUES (1,1), (2,2), (3,3);
+SELECT * FROM a;
+CREATE TEMP TABLE b (
+    common INTEGER, 
+    colb INTEGER
+);
+INSERT INTO b VALUES (2,2), (3,3), (4,4), (5,5);
+SELECT * FROM b;
+
+-- The joins we've been doing so far have been "inner" joins 
+SELECT * FROM a JOIN b USING (common);
+SELECT * FROM a JOIN b ON a.common = b.common;
+
+-- By doing an "outer" join -- either "left" or "right" --- we'll add certain missing rows 
+SELECT * FROM a LEFT JOIN b ON a.common = b.common;
+SELECT * FROM a RIGHT JOIN b ON a.common = b.common;
+
+-- A running example: what species do not have any nest data? 
+SELECT COUNT(*) FROM Species;
+SELECT COUNT(DISTINCT Species) FROM Bird_nests;
+-- method 1 
+SELECT Code FROM Species
+  WHERE Code NOT IN (SELECT DISTINCT Species FROM Bird_nests);
+
+-- method 2 
+SELECT Code, Species FROM Species LEFT JOIN Bird_nests
+  ON Code = Species
+  WHERE Species IS NULL; 
+
+-- Its also possible to join a table with itself, a so-called "self-join"
+
+
+-- Understanding a limitation of DuckDB 
+-- group bird eggs and nest on nest_id 
+-- how many rows with how many eggs 
+SELECT Nest_ID, COUNT(*) AS Num_eggs
+  FROM Bird_nests JOIN Bird_eggs 
+  USING (Nest_ID)
+  WHERE Nest_ID LIKE '13B%' -- just to limit num of rows for example 
+  GROUP BY Nest_ID;
+
+-- Let's add in Observer 
+SELECT Nest_ID, Observer, COUNT(*) AS Num_eggs 
+  FROM Bird_nests JOIN Bird_eggs 
+  USING (Nest_ID)
+  WHERE Nest_ID LIKE '13B%' -- just to limit num of rows for example 
+  GROUP BY Nest_ID;
+-- This popped out a Binder Error 
+-- Why? 
+SELECT * FROM Bird_nests JOIN Bird_eggs
+  USING (Nest_ID)
+  WHERE Nest_ID LIKE '13B%';
+-- Look at top 4 rows of this output. 
+-- That would form a group since they all have the same nest_id value
+-- Freaks out because it doesnt know if the observer value will match for those matching values 
+-- Nest_ID is the primary key, so there can only be one value for observer 
+-- Other RDB systems are smart enough to figure this out, not DuckDB though 
+
+-- DuckDB solution #1: 
+SELECT Nest_ID, Observer, COUNT(*) AS Num_eggs
+  FROM Bird_nests JOIN Bird_eggs 
+  USING (Nest_ID)
+  WHERE Nest_ID LIKE '13B%'
+  GROUP BY Nest_ID, Observer; -- add observer here, now it works 
+
+-- Duck DB solution #2:
+SELECT Nest_ID, ANY_VALUE(Observer) AS Observer, COUNT(*) AS Num_eggs
+  FROM Bird_nests JOIN Bird_eggs
+  USING(Nest_ID)
+  WHERE Nest_ID LIKE '13B%'
+  GROUP BY Nest_ID;
+
+.tables
+SELECT * FROM Nest_eggs
+-- FILL IN MISSING CODE 
+
+-- view versus temp table? 
+-- If you create temp table, it will form table and there it sits 
+-- view is always virtual 
+
+
+-- What about modifications (inserts, updates, deletes) on a view? possible? 
+-- it depends 
+-- how smart the database is 
+
+
+-- set operations: UNION, UNION ALL, INTERSECT, EXCEPT 
+
+SELECT * FROM Bird_eggs LIMIT 5;
+
+SELECT Book_page, Year, Site, Nest_ID, Egg_num, Length*25.4 AS Length, Width*25.4 AS Width
+  FROM Bird_eggs 
+  WHERE Book_page LIKE 'b14%'
+UNION 
+SELECT Book_page, Year, Site, Nest_ID, Egg_num, Length, Width
+  FROM Bird_eggs 
+  WHERE Book_page NOT LIKE 'b14%';
+-- not a super realistic example of using union 
+
+-- method 3 for running example 
+SELECT Code FROM Species
+EXCEPT 
+SELECT DISTINCT Species FROM Bird_nests;x
