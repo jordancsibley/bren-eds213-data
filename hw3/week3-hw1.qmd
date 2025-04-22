@@ -1,0 +1,38 @@
+---
+title: "Week 3 Homework problem 1"
+author: "Jordan Sibley" 
+date: "April 22, 2025"
+format: html
+---
+
+## Part 1
+
+```{sql}
+-- create table 
+CREATE TEMP TABLE mytable (
+  col REAL   
+);
+-- insert values 
+INSERT INTO mytable VALUES (1), (2), (NULL), (3), (4);
+
+-- find average value of column 'col'
+SELECT AVG(col) FROM mytable;
+```
+
+**Response**: The result of the average of my inserted values is 2.5, which I confirmed is the average of the values ((1 + 2 + 3 + 4) / 4), ignoring the NULL value. If it did somehow factor the NULL value into the calculation, it would be the sum of the numbers dividied by 5, which would have been 2.  
+
+## Part 2 
+
+```{sql}
+-- compute averages without AVG function 
+SELECT SUM(col)/COUNT(*) FROM mytable; -- 2.0
+SELECT SUM(col)/COUNT(col) FROM mytable; -- 2.5 
+```
+
+**Response**: The second approach gives us the correct answer. The first way is incorrect because COUNT(*) puts all the rows on the denominator, which then includes the NULL value. The second way puts COUNT(col) on the denominator, which then only includes real values. 
+
+
+```{sql}
+-- drop table 
+DROP TABLE mytable;
+```
