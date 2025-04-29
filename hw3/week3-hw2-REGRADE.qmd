@@ -1,0 +1,48 @@
+---
+title: "Week 3 Homework problem 2"
+author: "Jordan Sibley" 
+date: "April 22, 2025"
+format: html
+---
+
+## Part 1 
+
+
+```{sql}
+-- Demonstrate incorrect code 
+SELECT Site_name, MAX(Area) FROM Site; -- binder error 
+SELECT Site_name, AVG(Area) FROM Site; -- binder error 
+SELECT Site_name, COUNT(*) FROM Site; -- binder error 
+SELECT Site_name, SUM(Area) FROM Site; -- binder error 
+```
+
+All of these lines of code are popping out a Binder error. In the error message it states '"Site_name" must appear in the GROUP BY clause or must be part of an aggregate function. Either add it to the GROUP BY list, or use "ANY_VALUE(Site_name)" if the exact value of "Site_name" is not important.' 
+
+
+```{sql}
+-- Corrected code 
+SELECT Site_name, Area
+  FROM Site 
+  WHERE Area = (SELECT MAX(Area) FROM SITE);
+```
+
+
+This code now works because we have specified that we are trying to exact not just any site, but instead the site where area is the greatest.
+
+
+## Part 2 
+
+```{sql}
+-- find site with max area 
+SELECT Site_name, Area From Site
+  ORDER BY Area DESC
+  LIMIT 1;
+```
+
+## Part 3 
+
+```{sql}
+-- find site with max area using nested query 
+SELECT Site_name, Area FROM Site 
+  WHERE Area = (SELECT MAX(Area) FROM Site);
+```
