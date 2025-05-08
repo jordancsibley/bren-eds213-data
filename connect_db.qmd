@@ -1,0 +1,102 @@
+---
+title: "Connecting DuckDB"
+format: html
+editor_options: 
+  chunk_output_type: inline
+---
+```{r}
+library(tidyverse)
+library(DBI)
+library(duckdb)
+library(dbplyr)
+```
+
+### Connect to our database 
+```{r}
+conn <- DBI::dbConnect(duckdb::duckdb(), dbdir="database/database.db")
+```
+
+
+```{r}
+species <- tbl(conn, "Species")
+```
+
+
+### Let's do our first query 
+```{r}
+species_a <- dbGetQuery(conn, "SELECT * FROM Species WHERE Code LIKE '%a'")
+species_a
+```
+
+### There is a better way 
+
+```{r}
+# Through the use of dbplyr, you can write tidyverse syntax, and translate it into sql code 
+species |> 
+  filter(Relevance == "Study species") |> 
+  select(Code, Scientific_name)
+```
+```{r}
+# You can also use see the SQL query used 
+species |> 
+  filter(Relevance == "Study species") |> 
+  select(Code, Scientific_name) |> 
+  show_query()
+```
+
+```{r}
+species_study <- species |> 
+  filter(Relevance == "Study species") |> 
+  select(Code, Scientific_name)
+```
+
+
+```{r}
+# Notice that it is not in class table, instead it is the duckdb connection 
+# lazy evaluation, gives you the power to work with larger data 
+class(species_study)
+dim(species_study) # doesn't know the full extent of the data
+```
+
+
+### Grouping 
+```{r}
+species |> 
+  group_by(Relevance) |> 
+  summarise(num_species = n())
+```
+
+### You can mutate
+```{r}
+# Only mutates in the R environment, is not impacting the database
+species |> 
+  mutate(Code_x = paste0("X", Code)) |> 
+  show_query()
+```
+
+### How do we get the full data? 
+```{r}
+species_X <- species |> 
+  mutate(Code_x = paste0("X", Code)) |> 
+  collect()
+```
+
+### You can do joins
+
+```{r}
+eggs_db <- tbl(conn, "Bird_eggs")
+nest_db <- tbl(conn, "Bird_nests")
+```
+
+
+```{r}
+nest_eggs_df <- left_join(nest_db, eggs_db, by= "Nest_ID", keep = FALSE)
+```
+
+
+### Dont forget to close the database connection 
+
+```{r}
+DBI::dbDisconnect(conn, shutdown = TRUE)
+```
+
