@@ -1,0 +1,75 @@
+---
+title: "Week 5 Homework problem 2 - Bash essentials"
+author: "Jordan Sibley" 
+date: "May 6, 2025"
+format: html
+---
+
+Current directory: (base) ~/Desktop/MEDS/EDS_213/bren-eds213-data/ASDN_csv
+
+1. Compare the output of these three commands:
+
+`ls`
+`ls .`
+`ls "$(pwd)/../ASDN_csv"`
+
+Explain why you see what you see.
+
+**Response**: There are no differences between the output of these three commands. They all print out the files of the ASDN_csv directory that I am currently in. 
+
+---------------------------------------------------------------------------
+
+2. Try the following two commands:
+
+`wc -l *.csv`
+`cat *.csv | wc -l`
+
+The first prints filenames and line counts. The second prints a bare number. Why does it print that number, and why does it not print any filenames?
+
+**Response**: The first command shows the number of lines of each file within the subdirectory. The second command shows the total sum of lines of all the csv files summed together. The reason for this difference is the `cat` command, which means to concatinate. 
+
+---------------------------------------------------------------------------
+
+3. You want to count the total number of lines in all CSV files and try this command:
+
+`cat *.csv | wc -l species.csv`
+
+What happens and why?
+
+**Response**: This command just gives the number of lines within the csv `species.csv`. When you give a specific file name after `cat *.csv | wc -l`, it makes sense that it would only give you information for that file. 
+
+---------------------------------------------------------------------------
+
+4. You’re given
+
+`name=Moe`
+
+and you’d like to print “Moe_Howard”. You try this:
+
+`echo "$name_Howard"`
+
+but that doesn’t quite work. What fix can you apply to `$name`, while keeping it inside the quotation marks, to make this command give the desired effect?
+
+**Response**: In order to get desired effect, you need to add curly brackets around name 
+
+echo "${name}_Howard"
+
+---------------------------------------------------------------------------
+
+5. You create a script and run it like so:
+
+bash myscript.sh *.csv
+
+What are the values of variables $1 and $#? Explain why the script does not see just one argument passed to it.
+
+**Response**: That is because, the *.csv part of the command is not just one argument, in fact it turns into multiple arguments since there are multiple csv files in the subdirectory.  $1 is the first argument and $# is the number of arguments, or number of csv files. 
+
+---------------------------------------------------------------------------
+
+6. You create a script and run it like so:
+
+bash myscript.sh "$(date)" $(date)
+
+In your script, what is the value of variable $3?
+
+**Response**: The value of $3 would be the month because it is parsing through the date/time object. If the date was today: "Tue May  6 15:00:00 PDT 2025", then $1 is the whole date and time (full string), and then $2 is T

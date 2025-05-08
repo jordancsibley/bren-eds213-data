@@ -1,0 +1,1 @@
+Part 2 notes: At first, I just used 100 repetitions, but then the value of avg time was the same for the three queries. Then, I upped the reps to 1000, and the results of that showed that the join query was faster than the other two queries 

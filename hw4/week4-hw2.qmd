@@ -1,0 +1,23 @@
+---
+title: "Week 4 Homework - Who worked with whom?"
+author: "Jordan Sibley" 
+date: "April 30, 2025"
+format: html
+---
+
+## Overview 
+
+The Camp_assignment table lists where each person worked and when. Your goal is to answer, Who worked with whom? That is, you are to find all pairs of people who worked at the same site, and whose date ranges overlap while at that site. This can be solved using a self-join.
+
+**NOTE**: add a clause WHERE A.Site = 'lkri' so you have only 2 rows.
+
+
+```{sql}
+-- step 1, 2, 3, and 4
+SELECT A.Site, A.Observer as Observer_1, B.Observer as Observer_2
+FROM Camp_assignment A JOIN Camp_assignment B
+    ON A.Site = B.Site
+    AND A.Start < B.End
+    AND B.Start < A.End
+WHERE A.Observer < B.Observer AND A.Site = 'lkri';
+```

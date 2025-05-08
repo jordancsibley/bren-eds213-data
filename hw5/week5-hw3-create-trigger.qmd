@@ -1,0 +1,112 @@
+---
+title: "Week 5 Homework problem 2 - Triggers"
+author: "Jordan Sibley" 
+date: "May 6, 2025"
+format: html
+---
+
+## Part 1 🥚 🧩 
+
+Create a trigger in the Bird_eggs tables that allows the user to automatically update the table with the next sequential egg number of the Nest_ID. 
+
+```{sql}
+-- Set table view 
+.mode table
+
+-- Set null values 
+.nullvalue -NULL-
+```
+
+```{sql}
+-- Create trigger 
+CREATE TRIGGER egg_filler
+AFTER INSERT ON Bird_eggs
+FOR EACH ROW
+BEGIN
+    UPDATE Bird_eggs
+    SET 
+      Egg_num = (
+        SELECT IFNULL(MAX(Egg_num), 0) + 1
+        FROM Bird_eggs
+        WHERE Nest_ID = new.Nest_ID
+    )
+    WHERE Nest_ID = new.Nest_ID 
+    AND Egg_num IS NULL;
+END;
+```
+
+```{sql}
+-- Test trigger with new insert  
+INSERT INTO Bird_eggs
+    (Book_page, Year, Site, Nest_ID, Length, Width)
+    VALUES ('b14.6', 2014, 'eaba', '14eabaage01', 12.34, 56.78);
+
+SELECT * FROM Bird_eggs;
+
+-- Now test with new Nest_ID values 
+INSERT INTO Bird_eggs
+    (Book_page, Year, Site, Nest_ID, Length, Width)
+    VALUES ('b14.6', 2014, 'eaba', 'test_nest', 12.34, 56.78);
+
+SELECT * FROM Bird_eggs WHERE Nest_ID LIKE 'test_nest';
+```
+
+## Part 2 🥚 🧩 
+
+Update trigger so that it automatically updates the `Book_page', 'Year', and 'Site' columns based on the info of the unique Nest_ID. 
+
+```{sql}
+-- Drop trigger before new updates 
+DROP TRIGGER egg_filler;
+```
+
+```{sql}
+-- Update trigger to set values of other rows 
+
+CREATE TRIGGER egg_filler
+AFTER INSERT ON Bird_eggs
+FOR EACH ROW
+BEGIN
+    UPDATE Bird_eggs
+    SET 
+      Egg_num = (
+        SELECT IFNULL(MAX(Egg_num), 0) + 1
+        FROM Bird_eggs
+        WHERE Nest_ID = new.Nest_ID
+    ),
+      Book_page = (
+        SELECT Book_page 
+        FROM Bird_eggs
+        WHERE Nest_ID = new.Nest_ID AND Egg_num IS NOT NULL
+        LIMIT 1 -- dont need all the rows of the nest_id
+      ), 
+      Year = (
+        SELECT Year 
+        FROM Bird_eggs
+        WHERE Nest_ID = new.Nest_ID AND Egg_num IS NOT NULL
+        LIMIT 1 -- dont need all the rows of the nest_id
+      ), 
+      Site = (
+        SELECT Site
+        FROM Bird_eggs
+        WHERE Nest_ID = new.Nest_ID AND Egg_num IS NOT NULL
+        LIMIT 1 -- dont need all the rows of the nest_id
+      )
+    WHERE Nest_ID = new.Nest_ID 
+    AND Egg_num IS NULL;
+END;
+```
+
+Ask question: saw online something about rowid = new.rowid as the unique identifier for the row. Is that better than doing the WHERE Nest_ID = new.Nest_ID 
+    AND Egg_num IS NULL;
+
+
+
+```{sql}
+-- test it 
+INSERT INTO Bird_eggs
+    (Nest_ID, Length, Width)
+    VALUES ('14eabaage01', 12.34, 56.78);
+-- Check that it worked
+SELECT * FROM Bird_eggs;
+```

@@ -1,0 +1,46 @@
+---
+title: "Week 4 Homework - Who’s the culprit?"
+author: "Jordan Sibley" 
+date: "April 30, 2025"
+format: html
+---
+
+**Overview**: Need to find which observer counted exactly 36 eggs at the “nome” site between 1998 and 2008 inclusive
+
+**Plan**: 
+
+- Bird_eggs table has the number of eggs, year, and site 
+- Bird_nests table can join with the Bird_eggs via Nest_ID. From this join we can get observer code from Bird_nests 
+- Personnel table has Abbreviation column which can be joined to Observer column from Bird_nests and from there we can extract the actual name of the observer
+- Need to find where Bird_nests.ageMethod = 'float'
+
+```{sql}
+-- Find observers that worked from 1998 and 2008 
+SELECT DISTINCT Observer FROM Bird_nests 
+  WHERE Year BETWEEN 1998 AND 2008;
+```
+
+
+```{sql}
+-- find which of those observers worked at 'nome' and extract Nest_ID
+SELECT Observer, Nest_ID 
+  FROM Bird_nests 
+  WHERE Site = 'nome'
+  AND Year BETWEEN 1998 AND 2008
+  AND ageMethod = 'float' 
+  AND Observer IS NOT NULL;
+```
+
+
+```{sql}
+-- Final query: join to personnel table and find which counted at 36 nests 
+SELECT Personnel.Name, COUNT(Bird_nests.Nest_ID) AS Num_floated_nests
+  FROM Bird_nests
+  JOIN Personnel ON Bird_nests.Observer = Personnel.Abbreviation
+  WHERE Bird_nests.Site = 'nome'
+  AND Bird_nests.Year BETWEEN 1998 AND 2008
+  AND Bird_nests.ageMethod = 'float'
+  AND Bird_nests.Observer IS NOT NULL
+  GROUP BY Personnel.Name
+  HAVING COUNT(Bird_nests.Nest_ID) = 36;
+```

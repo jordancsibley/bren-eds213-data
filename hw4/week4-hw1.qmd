@@ -1,0 +1,34 @@
+---
+title: "Week 4 Homework - Missing Data"
+author: "Jordan Sibley" 
+date: "April 30, 2025"
+format: html
+---
+
+Question: Which sites have no egg data?
+
+1. Using a `Code NOT IN (subquery)` clause 
+
+```{sql}
+SELECT Code FROM Site
+    WHERE Code NOT IN (SELECT DISTINCT Site FROM Bird_eggs)
+    ORDER BY Code;
+```
+
+2. Using an outer join with a WHERE clause 
+
+```{sql}
+SELECT Code FROM Site FULL OUTER JOIN Bird_eggs
+    ON Code = Site 
+    WHERE Egg_num IS NULL
+    ORDER BY Code;
+```
+
+3. Using the set operation EXCEPT
+
+```{sql}
+SELECT Code FROM Site
+  EXCEPT 
+  SELECT DISTINCT Site FROM Bird_eggs
+  ORDER BY Code;
+```
