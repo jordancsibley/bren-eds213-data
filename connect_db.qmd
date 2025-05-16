@@ -36,6 +36,8 @@ species |>
   filter(Relevance == "Study species") |> 
   select(Code, Scientific_name)
 ```
+
+
 ```{r}
 # You can also use see the SQL query used 
 species |> 
