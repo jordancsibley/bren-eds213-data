@@ -8,7 +8,7 @@ csv="index_results.csv"
 echo "\"label\",\"avg_time\",\"num_distinct\"" > $csv
 
 # Experiment 1: no index
-./hw5/query_timer_bash.sh "none" 1 "$query" "$db" "$csv"
+./query_timer_bash.sh "none" 1 "$query" "$db" "$csv"
 
 # Single-column indexes
 for col in Site Species Year Observer ageMethod; do

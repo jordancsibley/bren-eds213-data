@@ -1,33 +1,54 @@
 #!/bin/bash
 
-# Jordan Sibley 
-# May 7, 2025 
+# Usage:
+# ./query_timer.sh label num_reps query db_file csv_file
 
-# bash query_timer.sh label num_reps query db_file csv_file
+label=$1
+num_reps=$2
+query=$3
+db_file=$4
+csv_file=$5
 
-# arguments 
-label="$1"
-num_reps="$2"
-query="$3"
-db_file="$4"
-csv_file="$5"
-
-# create start timer
-start_time=$(date +%s)
-
-# run the query num_reps times
-for i in $(seq "$num_reps"); do
-    duckdb "$db_file" "$query" > /dev/null 2>&1
+# Add automation
+while true; do
+    start=$SECONDS
+    for _ in $(seq $num_reps); do
+        sqlite3 $db_file "$query" >& /dev/null
+    done
+    end=$SECONDS
+    if [ $((end - start)) -gt 5 ]; then
+        break
+    fi
+    echo "Too fast, trying again!"
+    num_reps=$((num_reps * 10))
 done
 
-# end timer
+# Get start time in seconds
+start_time=$(date +%s)
+
+# Run the query num_reps times
+for i in $(seq "$num_reps"); do
+    sqlite3 "$db_file" "$query" > /dev/null
+done
+
+# Get end time
 end_time=$(date +%s)
 
-# take difference of times to find total time 
-total_time=$((end_time - start_time))
+# Compute elapsed time in seconds
+elapsed=$((end_time - start_time))
 
-# compute average time by number of reps 
-avg_time=$(echo "scale=6; $total_time / $num_reps" | bc)
+# Compute average time per query
+avg_time=$(echo "scale=6; $elapsed / $num_reps" | bc)
 
-# output avg time for each csv file 
-echo "${label},${avg_time}" >> "$csv_file"
+# Extract number of distinct values
+if [ "$label" = "none" ]; then
+  num_distinct=1
+else
+  # Remove spaces from the label (e.g., "Site, Species" → "Site,Species")
+  clean_label=$(echo "$label" | tr -d ' ')
+  distinct="SELECT COUNT(*) FROM (SELECT DISTINCT $clean_label FROM Bird_nests) AS a;"
+  num_distinct=$(sqlite3 "$db_file" "$distinct")
+fi
+
+# Write results to CSV (append mode)
+echo "\"$label\",$avg_time,$num_distinct" >> "$csv_file"

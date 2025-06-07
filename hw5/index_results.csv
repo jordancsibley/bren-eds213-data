@@ -1,0 +1,16 @@
+"label","avg_time","num_distinct"
+"none",.007000,1
+"Site",.007000,
+"Species",.007000,
+"Year",.007000,
+"Observer",.007000,
+"ageMethod",.007000,
+"Site,Species",.007000,
+"Site,Observer",.007000,
+"Species,Observer",.007000,
+"Year,Observer",.007000,
+"Observer,ageMethod",.006000,
+"Site,Species,Observer",.007000,
+"Site,Year,Observer",.007000,
+"Species,ageMethod,Year,Observer",.007000,
+"Species,ageMethod,Year",.007000,
